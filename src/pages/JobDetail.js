@@ -29,6 +29,7 @@ export default function JobDetail() {
   const [job, setJob] = useState(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [alreadyApplied, setAlreadyApplied] = useState(false);
+  const [myApplicationId, setMyApplicationId] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -43,13 +44,16 @@ export default function JobDetail() {
   }, [id, nav]);
 
   useEffect(() => {
-    if (user?.role !== "candidate") { setAlreadyApplied(false); return; }
+    if (user?.role !== "candidate") { setAlreadyApplied(false); setMyApplicationId(null); return; }
     (async () => {
       try {
         const r = await api.get("/api/applications/me");
-        setAlreadyApplied((r.data || []).some((a) => a.job_id === id));
+        const mine = (r.data || []).find((a) => a.job_id === id);
+        setAlreadyApplied(!!mine);
+        setMyApplicationId(mine?.application_id || null);
       } catch {
         setAlreadyApplied(false);
+        setMyApplicationId(null);
       }
     })();
   }, [id, user]);
@@ -63,7 +67,7 @@ export default function JobDetail() {
     }
     if (alreadyApplied) {
       toast.info("You've already applied to this role.");
-      nav("/applications");
+      nav(myApplicationId ? `/me/applications?app=${myApplicationId}` : "/me/applications");
       return;
     }
     setApplyOpen(true);
@@ -166,7 +170,7 @@ export default function JobDetail() {
               </p>
             </div>
             {alreadyApplied ? (
-              <Link to="/applications">
+              <Link to={myApplicationId ? `/me/applications?app=${myApplicationId}` : "/me/applications"}>
                 <Button variant="outline" className="h-11 px-6">View application</Button>
               </Link>
             ) : (
@@ -185,7 +189,7 @@ export default function JobDetail() {
             </div>
           </div>
           {alreadyApplied ? (
-            <Link to="/applications">
+            <Link to={myApplicationId ? `/me/applications?app=${myApplicationId}` : "/me/applications"}>
               <Button variant="outline" className="h-11 px-6 shrink-0">View application</Button>
             </Link>
           ) : (

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Plane, Menu, X, User2, Briefcase, LogOut, LayoutDashboard, FileText, Sparkles } from "lucide-react";
+import { Plane, Menu, X, User2, UserRound, Briefcase, LogOut, LayoutDashboard, FileText, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 
@@ -17,9 +17,9 @@ function NavItem({ to, children }) {
   );
 }
 
-function Brand() {
+function Brand({ to = "/" }) {
   return (
-    <Link to="/" className="flex items-center gap-2.5 group">
+    <Link to={to} className="flex items-center gap-2.5 group">
       <div className="h-9 w-9 rounded-lg bg-slate-900 text-white grid place-items-center group-hover:bg-slate-800 transition">
         <Plane className="h-4 w-4" strokeWidth={2.2} />
       </div>
@@ -99,15 +99,37 @@ export default function Navbar() {
     nav("/");
   };
 
+  const brandHref =
+    user?.role === "employer" ? "/employer" :
+    user?.role === "candidate" ? "/jobs" :
+    user?.role === "admin" ? "/admin" : "/";
+
   return (
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200/70">
       <div className="tj-container h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Brand />
+          <Brand to={brandHref} />
           <nav className="hidden md:flex items-center gap-6">
-            <NavItem to="/jobs">Find Jobs</NavItem>
-            <NavItem to="/for-employers">For Employers</NavItem>
-            <NavItem to="/employer/plans">Pricing</NavItem>
+            {!user && (
+              <>
+                <NavItem to="/jobs">Find Jobs</NavItem>
+                <NavItem to="/for-employers">For Employers</NavItem>
+                <NavItem to="/employer/plans">Pricing</NavItem>
+              </>
+            )}
+            {user?.role === "candidate" && (
+              <>
+                <NavItem to="/jobs">Find Jobs</NavItem>
+                <NavItem to="/me/applications">My applications</NavItem>
+              </>
+            )}
+            {user?.role === "employer" && (
+              <>
+                <NavItem to="/employer">Dashboard</NavItem>
+                <NavItem to="/employer/shortlisted">Pipeline</NavItem>
+                <NavItem to="/employer/plans">Plans</NavItem>
+              </>
+            )}
           </nav>
         </div>
 
@@ -115,13 +137,10 @@ export default function Navbar() {
           {!user && (
             <>
               <Link to="/candidate/login">
-                <Button variant="ghost" size="sm">Candidate sign in</Button>
+                <Button variant="outline" size="sm">Candidate Login</Button>
               </Link>
               <Link to="/employer/login">
-                <Button variant="outline" size="sm">Employer sign in</Button>
-              </Link>
-              <Link to="/candidate/signup">
-                <Button size="sm">Get started</Button>
+                <Button size="sm">Employer Login</Button>
               </Link>
             </>
           )}
@@ -132,7 +151,9 @@ export default function Navbar() {
                 className="flex items-center gap-2 rounded-full pl-2 pr-3 py-1.5 hover:bg-slate-100 border border-slate-200"
               >
                 <div className="h-7 w-7 rounded-full bg-slate-900 text-white grid place-items-center text-xs font-medium">
-                  {(user.email || "?")[0]?.toUpperCase()}
+                  {user.email
+                    ? user.email[0].toUpperCase()
+                    : <UserRound className="h-3.5 w-3.5" strokeWidth={2.2} />}
                 </div>
                 <span className="text-sm text-slate-700 capitalize">{user.role}</span>
               </button>
@@ -159,30 +180,45 @@ export default function Navbar() {
       {open && (
         <div className="md:hidden border-t border-slate-200 bg-white">
           <div className="tj-container py-4 grid gap-3 text-sm">
-            <Link to="/jobs" onClick={() => setOpen(false)}>Find Jobs</Link>
-            <Link to="/for-employers" onClick={() => setOpen(false)}>For Employers</Link>
-            <Link to="/employer/plans" onClick={() => setOpen(false)}>Pricing</Link>
+            {!user && (
+              <>
+                <Link to="/jobs" onClick={() => setOpen(false)}>Find Jobs</Link>
+                <Link to="/for-employers" onClick={() => setOpen(false)}>For Employers</Link>
+                <Link to="/employer/plans" onClick={() => setOpen(false)}>Pricing</Link>
+              </>
+            )}
+            {user?.role === "candidate" && (
+              <>
+                <Link to="/jobs" onClick={() => setOpen(false)}>Find Jobs</Link>
+                <Link to="/me/applications" onClick={() => setOpen(false)}>My applications</Link>
+              </>
+            )}
+            {user?.role === "employer" && (
+              <>
+                <Link to="/employer" onClick={() => setOpen(false)}>Dashboard</Link>
+                <Link to="/employer/shortlisted" onClick={() => setOpen(false)}>Pipeline</Link>
+                <Link to="/employer/plans" onClick={() => setOpen(false)}>Plans</Link>
+              </>
+            )}
             <div className="border-t pt-3 grid gap-2">
               {!user && (
                 <>
-                  <Link to="/candidate/login" onClick={() => setOpen(false)} className="text-slate-900">Candidate sign in</Link>
-                  <Link to="/employer/login" onClick={() => setOpen(false)} className="text-slate-900">Employer sign in</Link>
-                  <Link to="/candidate/signup" onClick={() => setOpen(false)}>
-                    <Button className="w-full">Get started</Button>
+                  <Link to="/candidate/login" onClick={() => setOpen(false)}>
+                    <Button variant="outline" className="w-full">Candidate Login</Button>
+                  </Link>
+                  <Link to="/employer/login" onClick={() => setOpen(false)}>
+                    <Button className="w-full">Employer Login</Button>
                   </Link>
                 </>
               )}
               {user?.role === "candidate" && (
                 <>
                   <Link to="/me/profile" onClick={() => setOpen(false)}>My profile</Link>
-                  <Link to="/me/applications" onClick={() => setOpen(false)}>My applications</Link>
                   <button onClick={onLogout} className="text-left">Sign out</button>
                 </>
               )}
               {user?.role === "employer" && (
                 <>
-                  <Link to="/employer" onClick={() => setOpen(false)}>Dashboard</Link>
-                  <Link to="/employer/shortlisted" onClick={() => setOpen(false)}>Pipeline</Link>
                   <Link to="/employer/profile" onClick={() => setOpen(false)}>Company profile</Link>
                   <button onClick={onLogout} className="text-left">Sign out</button>
                 </>

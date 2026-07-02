@@ -63,8 +63,13 @@ export default function AuthShell({ side, title, subtitle, children }) {
           <div className="h-9 w-9 rounded-lg bg-slate-900 text-white grid place-items-center">
             <Plane className="h-4 w-4" strokeWidth={2.2} />
           </div>
-          <div className="font-display text-lg font-semibold text-slate-900">
-            Opsy<span className="text-blue-600">Jobs</span>
+          <div className="leading-none">
+            <div className="font-display text-lg font-semibold text-slate-900">
+              Opsy<span className="text-blue-600">Jobs</span>
+            </div>
+            <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
+              by <img src="/ht-logo.png" alt="HelloTravel" className="h-4 w-auto" />
+            </div>
           </div>
         </Link>
         <div className="flex-1 flex items-center justify-center">

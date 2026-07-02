@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { ArrowRight, Mic, ShieldCheck, Sparkles, Briefcase, Users2 } from "lucide-react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
 
 export default function Home() {
+  const { user, loading } = useAuth();
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
@@ -16,6 +18,11 @@ export default function Home() {
       } catch {}
     })();
   }, []);
+
+  if (loading) return null;
+  if (user?.role === "employer") return <Navigate to="/employer" replace />;
+  if (user?.role === "candidate") return <Navigate to="/jobs" replace />;
+  if (user?.role === "admin") return <Navigate to="/admin" replace />;
 
   return (
     <div>

@@ -4,6 +4,7 @@ import { Briefcase, Users, Sparkles, Plus, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import PostActivationBanner from "@/components/PostActivationBanner";
 import { APPLICATION_STATUS_STYLE, ROLE_CATEGORIES } from "@/constants/roles";
 import { timeAgo } from "@/lib/format";
 
@@ -50,10 +51,27 @@ export default function Dashboard() {
   }
 
   const hasActiveSub = subscription?.status === "active";
-  const canPost = hasActiveSub && subscription.job_posts_used < subscription.job_posts_allowed;
+  // First job is free — employer can post 1 role before buying a plan; it
+  // just stays on hold (pending_kyc) until both plan + KYC are in place.
+  const trialAvailable = !hasActiveSub && jobs.length === 0;
+  const canPost = trialAvailable ||
+    (hasActiveSub && subscription.job_posts_used < subscription.job_posts_allowed);
+
+  const kycStatus = employer.kyc_status || "not_started";
+  // Only nag once they actually have a job on hold — before that, let them
+  // explore, create their first (free) post, and *then* prompt to activate.
+  const activationNeeded =
+    jobs.length > 0 && !(hasActiveSub && kycStatus === "approved");
 
   return (
     <div className="bg-slate-50 min-h-[calc(100vh-4rem)]">
+      {activationNeeded && (
+        <PostActivationBanner
+          hasActiveSub={hasActiveSub}
+          kycStatus={kycStatus}
+          scope="dashboard"
+        />
+      )}
       <div className="tj-container py-10">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
@@ -79,8 +97,16 @@ export default function Dashboard() {
           <div className="mt-6 tj-card p-5 border-blue-200 bg-blue-50">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
-                <div className="font-medium text-blue-900">You need an active subscription to post jobs.</div>
-                <p className="text-sm text-blue-800 mt-0.5">Plans start at ₹2,500 for 15 days, 2 posts.</p>
+                <div className="font-medium text-blue-900">
+                  {trialAvailable
+                    ? "Your first job post is free — draft it now."
+                    : "You need an active subscription to post more jobs."}
+                </div>
+                <p className="text-sm text-blue-800 mt-0.5">
+                  {trialAvailable
+                    ? "It stays on hold until you buy a plan and KYC is approved, then goes live automatically."
+                    : "Plans start at ₹2,500 for 15 days, 2 posts."}
+                </p>
               </div>
               <Link to="/employer/plans"><Button>View plans</Button></Link>
             </div>

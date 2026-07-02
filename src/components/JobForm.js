@@ -170,7 +170,9 @@ export default function JobForm({ mode = "create", jobId = null }) {
         nav(`/employer/jobs/${jobId}/applicants`);
       } else {
         const r = await api.post("/api/jobs", payload);
-        toast.success("Job posted!");
+        toast.success(
+          r.data?.status === "active" ? "Job posted!" : "Job created — activate it to go live"
+        );
         nav(`/employer/jobs/${r.data.job_id}/applicants`);
       }
     } catch (err) {
@@ -525,7 +527,7 @@ export default function JobForm({ mode = "create", jobId = null }) {
               <Button type="button" variant="outline">Cancel</Button>
             </Link>
             <Button type="submit" disabled={busy} className="h-11 px-6 bg-slate-900 hover:bg-slate-800">
-              {busy ? (isEdit ? "Saving…" : "Posting…") : (isEdit ? "Save changes" : "Post job")}
+              {busy ? (isEdit ? "Saving…" : "Creating…") : (isEdit ? "Save changes" : "Create job post")}
             </Button>
           </div>
         </form>

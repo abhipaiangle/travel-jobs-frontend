@@ -27,12 +27,19 @@ import EmployerJobEdit from "@/pages/employer/JobEdit";
 import EmployerApplicants from "@/pages/employer/Applicants";
 import EmployerShortlisted from "@/pages/employer/Shortlisted";
 
+import AdminLogin from "@/pages/admin/Login";
+import AdminOverview from "@/pages/admin/Overview";
+import AdminEmployers from "@/pages/admin/Employers";
+import AdminJobs from "@/pages/admin/Jobs";
+import AdminApplications from "@/pages/admin/Applications";
+
 // Routes where the split-screen AuthShell handles its own chrome.
 const AUTH_PREFIXES = [
   "/candidate/login",
   "/candidate/signup",
   "/employer/login",
   "/employer/signup",
+  "/admin",
 ];
 
 // Routes where we want a navbar but no marketing footer (app-like surfaces).
@@ -85,6 +92,12 @@ function Shell() {
           <Route path="/employer/jobs/new" element={<EmployerJobNew />} />
           <Route path="/employer/jobs/:jobId/edit" element={<EmployerJobEdit />} />
           <Route path="/employer/jobs/:jobId/applicants" element={<EmployerApplicants />} />
+
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminOverview />} />
+          <Route path="/admin/employers" element={<AdminEmployers />} />
+          <Route path="/admin/jobs" element={<AdminJobs />} />
+          <Route path="/admin/applications" element={<AdminApplications />} />
         </Routes>
       </main>
       {showFooter && <Footer />}

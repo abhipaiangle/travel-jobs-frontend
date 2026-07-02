@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import PasswordlessAuth from "@/components/PasswordlessAuth";
 import { INDIAN_CITIES } from "@/constants/roles";
 import { formatSalary } from "@/lib/format";
 
@@ -156,105 +157,36 @@ function ModalHeader({ step, job, onClose, totalQuestions }) {
 }
 
 // ============================================================
-// Step 1: Auth (login OR signup inline)
+// Step 1: Auth — unified passwordless (Google / Phone / Email)
 // ============================================================
 function AuthStep({ onComplete, job }) {
-  const { loginEmail, signupEmail, loginGoogle } = useAuth();
-  const [mode, setMode] = useState("signup");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [consent, setConsent] = useState(false);
-  const [busy, setBusy] = useState(false);
 
-  const submit = async (e) => {
-    e.preventDefault();
-    if (mode === "signup" && !consent) {
-      toast.error("Please accept the terms to continue.");
-      return;
-    }
-    setBusy(true);
-    try {
-      if (mode === "signup") {
-        await signupEmail({ email, password, role: "candidate" });
-        toast.success("Account created — let's apply.");
-      } else {
-        await loginEmail({ email, password, expectedRole: "candidate" });
-        toast.success("Welcome back.");
-      }
-      await onComplete();
-    } catch (err) {
-      toast.error(err?.message || (mode === "signup" ? "Sign up failed" : "Sign in failed"));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const google = async () => {
-    if (mode === "signup" && !consent) {
-      toast.error("Please accept the terms first.");
-      return;
-    }
-    setBusy(true);
-    try {
-      await loginGoogle({ role: "candidate", expectedRole: "candidate" });
-      await onComplete();
-    } catch (err) {
-      toast.error(err?.message || "Google sign-in failed");
-    } finally {
-      setBusy(false);
-    }
+  const onSuccess = async () => {
+    toast.success("Signed in");
+    await onComplete();
   };
 
   return (
     <div className="p-5 sm:p-6">
-      <div className="rounded-xl bg-blue-50 border border-blue-100 p-3 flex items-start gap-2.5">
+      <div className="rounded-xl bg-blue-50 border border-blue-100 p-3 flex items-start gap-2.5 mb-5">
         <Sparkles className="h-4 w-4 text-blue-600 mt-0.5" />
         <div className="text-sm text-slate-700">
           One profile, apply to every travel role. Takes about 2 minutes for {job.title}.
         </div>
       </div>
 
-      <div className="mt-5 flex bg-slate-100 rounded-lg p-1">
-        <button
-          onClick={() => setMode("signup")}
-          className={`flex-1 h-9 rounded-md text-sm font-medium transition ${
-            mode === "signup" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"
-          }`}
-        >
-          Create account
-        </button>
-        <button
-          onClick={() => setMode("login")}
-          className={`flex-1 h-9 rounded-md text-sm font-medium transition ${
-            mode === "login" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"
-          }`}
-        >
-          Sign in
-        </button>
-      </div>
-
-      <form onSubmit={submit} className="mt-4 space-y-3.5">
-        <div className="space-y-1.5">
-          <Label htmlFor="am-email">Email</Label>
-          <Input
-            id="am-email" type="email" required autoComplete="email"
-            value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com" className="h-11 text-base sm:text-sm"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="am-pw">Password</Label>
-          <Input
-            id="am-pw" type="password" required minLength={mode === "signup" ? 6 : undefined}
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            value={password} onChange={(e) => setPassword(e.target.value)}
-            className="h-11 text-base sm:text-sm"
-          />
-        </div>
-        {mode === "signup" && (
-          <label className="flex items-start gap-2 text-xs text-slate-600">
+      <PasswordlessAuth
+        role="candidate"
+        expectedRole="candidate"
+        onSuccess={onSuccess}
+        requireConsent
+        consentAccepted={consent}
+        consent={
+          <label className="mb-1 flex items-start gap-2 text-xs text-slate-600">
             <input
-              type="checkbox" checked={consent}
+              type="checkbox"
+              checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
               className="mt-0.5"
             />
@@ -264,18 +196,8 @@ function AuthStep({ onComplete, job }) {
               consent to storing my resume and voice introduction to apply to jobs.
             </span>
           </label>
-        )}
-        <Button type="submit" disabled={busy} className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-base">
-          {busy ? "Please wait…" : mode === "signup" ? "Create account & continue" : "Sign in & continue"}
-        </Button>
-      </form>
-
-      <div className="my-4 flex items-center gap-3 text-xs text-slate-400">
-        <div className="h-px bg-slate-200 flex-1" /> <span>or</span> <div className="h-px bg-slate-200 flex-1" />
-      </div>
-      <Button type="button" variant="outline" className="w-full h-11" onClick={google} disabled={busy}>
-        Continue with Google
-      </Button>
+        }
+      />
     </div>
   );
 }
@@ -284,7 +206,7 @@ function AuthStep({ onComplete, job }) {
 // Step 2: Profile (prefilled or empty) — resume + voice intro
 // ============================================================
 const EMPTY_PROFILE = {
-  full_name: "", phone: "", city: "", state: "",
+  full_name: "", email: "", phone: "", city: "", state: "",
   current_role: "", total_experience_years: "",
   expected_salary: "", notice_period: "",
   skills: [], languages: [],
@@ -292,14 +214,19 @@ const EMPTY_PROFILE = {
 };
 
 function ProfileStep({ profile, loading, onComplete }) {
+  const { user } = useAuth();
   const [form, setForm] = useState(EMPTY_PROFILE);
   const [busy, setBusy] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [uploadingVoice, setUploadingVoice] = useState(false);
 
   useEffect(() => {
-    if (profile) setForm({ ...EMPTY_PROFILE, ...profile });
-  }, [profile]);
+    if (profile) {
+      setForm({ ...EMPTY_PROFILE, ...profile, email: profile.email || user?.email || "" });
+    } else if (user?.email) {
+      setForm((f) => ({ ...f, email: user.email }));
+    }
+  }, [profile, user]);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -346,10 +273,9 @@ function ProfileStep({ profile, loading, onComplete }) {
 
   const submit = async (e) => {
     e?.preventDefault?.();
-    if (!form.full_name || !form.phone || !form.city || !form.state) {
+    if (!form.full_name || !form.email || !form.phone || !form.city || !form.state) {
       toast.error("Please complete the basics."); return;
     }
-    if (!form.resume_url) { toast.error("Please upload a resume."); return; }
     if (!form.voice_intro_url) { toast.error("Please record a voice introduction."); return; }
     setBusy(true);
     try {
@@ -377,6 +303,9 @@ function ProfileStep({ profile, loading, onComplete }) {
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Full name" required>
           <Input value={form.full_name} onChange={(e) => set("full_name", e.target.value)} required className="h-11 text-base sm:text-sm" />
+        </Field>
+        <Field label="Email" required>
+          <Input type="email" autoComplete="email" value={form.email} onChange={(e) => set("email", e.target.value)} required placeholder="you@example.com" className="h-11 text-base sm:text-sm" />
         </Field>
         <Field label="Phone" required>
           <Input type="tel" inputMode="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} required placeholder="+91…" className="h-11 text-base sm:text-sm" />
@@ -523,7 +452,7 @@ function VoiceIntroField({ existing, uploading, onReady }) {
           </span>
         )}
       </SectionTitle>
-      <p className="text-xs text-slate-500 -mt-2 mb-2">
+      <p className="text-xs text-slate-500 mt-1 mb-2">
         10–60 sec. Introduce yourself, your travel-industry background, and why this role.
       </p>
       <div className="rounded-xl bg-slate-50 border border-slate-200 p-4">
@@ -595,18 +524,22 @@ function VoiceIntroField({ existing, uploading, onReady }) {
 // ============================================================
 // Step 3: Screening questions (voice or text, one per screen)
 // ============================================================
-function ScreeningStep({ job, application, onComplete, onSkip }) {
+export function ScreeningStep({ job, application, initialAnswers, onComplete, onSkip }) {
   const questions = job.custom_questions || [];
   const [idx, setIdx] = useState(0);
-  const [answers, setAnswers] = useState(() =>
-    questions.map((q) => ({
-      question_id: q.id,
-      answer_type: q.answer_type || "text",
-      answer: "",
-      voice_url: "",
-      duration: null,
-    }))
-  );
+  const [answers, setAnswers] = useState(() => {
+    const prev = new Map((initialAnswers || []).map((a) => [a.question_id, a]));
+    return questions.map((q) => {
+      const seed = prev.get(q.id) || {};
+      return {
+        question_id: q.id,
+        answer_type: q.answer_type || "text",
+        answer: seed.answer || "",
+        voice_url: seed.voice_url || "",
+        duration: seed.duration ?? null,
+      };
+    });
+  });
   const [busy, setBusy] = useState(false);
 
   const q = questions[idx];

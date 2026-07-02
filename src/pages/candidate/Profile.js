@@ -12,6 +12,7 @@ import { INDIAN_CITIES, STANDARD_TRAVEL_LANGUAGES } from "@/constants/roles";
 
 const EMPTY = {
   full_name: "",
+  email: "",
   phone: "",
   city: "",
   state: "",
@@ -47,7 +48,11 @@ export default function CandidateProfile() {
     (async () => {
       try {
         const r = await api.get("/api/candidates/me");
-        if (r.data) setForm({ ...EMPTY, ...r.data });
+        if (r.data) {
+          setForm({ ...EMPTY, ...r.data, email: r.data.email || user?.email || "" });
+        } else if (user?.email) {
+          setForm((f) => ({ ...f, email: user.email }));
+        }
       } catch {}
       setLoaded(true);
     })();
@@ -131,8 +136,9 @@ export default function CandidateProfile() {
     return <div className="tj-container py-16 text-slate-500">Loading…</div>;
   }
 
+  // Voice intro is mandatory; resume is optional.
   const profileComplete =
-    !!form.full_name && !!form.phone && !!form.resume_url && !!form.voice_intro_url;
+    !!form.full_name && !!form.email && !!form.phone && !!form.voice_intro_url;
 
   return (
     <div className="bg-slate-50 min-h-[calc(100vh-4rem)] pb-24 sm:pb-0">
@@ -163,6 +169,9 @@ export default function CandidateProfile() {
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Full name" required>
                 <Input value={form.full_name} onChange={(e) => set("full_name", e.target.value)} required />
+              </Field>
+              <Field label="Email" required>
+                <Input type="email" autoComplete="email" value={form.email} onChange={(e) => set("email", e.target.value)} required placeholder="you@example.com" />
               </Field>
               <Field label="Phone" required>
                 <Input type="tel" inputMode="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} required placeholder="+91…" className="h-11 text-base sm:text-sm" />
@@ -256,7 +265,7 @@ export default function CandidateProfile() {
           </div>
 
           <div className="tj-card p-5 sm:p-6">
-            <h2 className="font-display text-base sm:text-lg font-semibold mb-1">Resume</h2>
+            <h2 className="font-display text-base sm:text-lg font-semibold mb-1">Resume <span className="text-slate-400 font-normal text-sm">(optional)</span></h2>
             <p className="text-sm text-slate-600 mb-4">PDF, up to 5MB. Employers can download this only if you apply to their role.</p>
             {form.resume_url ? (
               <div className="flex items-center justify-between gap-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
@@ -290,7 +299,7 @@ export default function CandidateProfile() {
             <p className="text-sm text-slate-500">
               {profileComplete
                 ? "All set — you can now apply with one click."
-                : "Resume + voice intro are required to apply to jobs."}
+                : "A voice intro is required to apply to jobs. Resume is optional."}
             </p>
             <Button type="submit" disabled={busy} className="h-11 px-6 bg-slate-900 hover:bg-slate-800">
               {busy ? "Saving…" : "Save profile"}
