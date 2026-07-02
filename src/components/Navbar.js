@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Plane, Menu, X, User2, UserRound, Briefcase, LogOut, LayoutDashboard, FileText, Sparkles } from "lucide-react";
+import { Menu, X, User2, UserRound, Briefcase, LogOut, LayoutDashboard, FileText, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 
@@ -19,18 +19,8 @@ function NavItem({ to, children }) {
 
 function Brand({ to = "/" }) {
   return (
-    <Link to={to} className="flex items-center gap-2.5 group">
-      <div className="h-9 w-9 rounded-lg bg-slate-900 text-white grid place-items-center group-hover:bg-slate-800 transition">
-        <Plane className="h-4 w-4" strokeWidth={2.2} />
-      </div>
-      <div className="leading-none">
-        <div className="font-display text-lg font-semibold text-slate-900">
-          Opsy<span className="text-blue-600">Jobs</span>
-        </div>
-        <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
-          by <img src="/ht-logo.png" alt="HelloTravel" className="h-5 w-auto" />
-        </div>
-      </div>
+    <Link to={to} className="flex items-center group">
+      <img src="/opsyjobs-logo.svg" alt="OpsyJobs" className="h-9 w-auto" />
     </Link>
   );
 }

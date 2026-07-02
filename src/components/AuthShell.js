@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Plane } from "lucide-react";
 
 /** Split-screen auth shell — dark side with brand story, light side with form. */
 export default function AuthShell({ side, title, subtitle, children }) {
@@ -12,13 +11,8 @@ export default function AuthShell({ side, title, subtitle, children }) {
             "radial-gradient(circle at 20% 30%, rgba(71, 115, 228, 0.28), transparent 55%), radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.15), transparent 50%)",
         }} />
         <div className="relative h-full p-12 flex flex-col justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-white text-slate-900 grid place-items-center">
-              <Plane className="h-4 w-4" strokeWidth={2.2} />
-            </div>
-            <div className="font-display text-lg font-semibold">
-              Opsy<span className="text-blue-400">Jobs</span>
-            </div>
+          <Link to="/" className="flex items-center">
+            <img src="/opsyjobs-logo-on-dark.svg" alt="OpsyJobs" className="h-10 w-auto" />
           </Link>
           <div>
             <h2 className="font-display text-4xl font-semibold leading-tight">
@@ -51,26 +45,15 @@ export default function AuthShell({ side, title, subtitle, children }) {
               ))}
             </ul>
           </div>
-          <div className="text-xs text-slate-500 flex items-center gap-1.5">
-            © {new Date().getFullYear()} OpsyJobs · by
-            <img src="/ht-logo.png" alt="HelloTravel" className="h-6 w-auto" />
+          <div className="text-xs text-slate-500">
+            © {new Date().getFullYear()} OpsyJobs
           </div>
         </div>
       </div>
 
       <div className="flex flex-col p-6 md:p-10">
-        <Link to="/" className="lg:hidden flex items-center gap-2.5 mb-10">
-          <div className="h-9 w-9 rounded-lg bg-slate-900 text-white grid place-items-center">
-            <Plane className="h-4 w-4" strokeWidth={2.2} />
-          </div>
-          <div className="leading-none">
-            <div className="font-display text-lg font-semibold text-slate-900">
-              Opsy<span className="text-blue-600">Jobs</span>
-            </div>
-            <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
-              by <img src="/ht-logo.png" alt="HelloTravel" className="h-4 w-auto" />
-            </div>
-          </div>
+        <Link to="/" className="lg:hidden flex items-center mb-10">
+          <img src="/opsyjobs-logo.svg" alt="OpsyJobs" className="h-10 w-auto" />
         </Link>
         <div className="flex-1 flex items-center justify-center">
           <div className="w-full max-w-md">

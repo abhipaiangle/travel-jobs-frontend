@@ -1,6 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ShieldCheck } from "lucide-react";
 import PasswordlessAuth from "@/components/PasswordlessAuth";
 
 export default function AdminLogin() {
@@ -16,17 +15,10 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-slate-900 grid place-items-center px-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 sm:p-8 shadow-xl">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="h-9 w-9 rounded-lg bg-slate-900 grid place-items-center">
-            <ShieldCheck className="h-5 w-5 text-white" />
-          </div>
-          <div className="leading-none">
-            <div className="font-display text-lg font-semibold">
-              Opsy<span className="text-blue-600">Jobs</span> Admin
-            </div>
-            <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
-              by <img src="/ht-logo.png" alt="HelloTravel" className="h-4 w-auto" />
-            </div>
+        <div className="mb-6 flex items-center gap-3">
+          <img src="/opsyjobs-logo.svg" alt="OpsyJobs" className="h-9 w-auto" />
+          <div className="text-[10px] font-medium uppercase tracking-wider text-slate-500 border-l border-slate-200 pl-3">
+            Admin
           </div>
         </div>
         <PasswordlessAuth

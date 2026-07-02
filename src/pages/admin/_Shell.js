@@ -33,19 +33,9 @@ export default function AdminShell({ children, title, actions }) {
   return (
     <div className="min-h-screen bg-slate-100 flex">
       <aside className="hidden sm:flex w-56 flex-col bg-slate-900 text-slate-100 py-6 px-3 sticky top-0 h-screen">
-        <div className="flex items-center gap-2 px-2 mb-6">
-          <div className="h-8 w-8 rounded-lg bg-white/10 grid place-items-center">
-            <ShieldCheck className="h-4 w-4" />
-          </div>
-          <div className="leading-none">
-            <div className="font-display text-sm font-semibold">
-              Opsy<span className="text-blue-400">Jobs</span>
-            </div>
-            <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-0.5">Admin</div>
-            <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1 normal-case tracking-normal">
-              by <img src="/ht-logo.png" alt="HelloTravel" className="h-4 w-auto brightness-0 invert opacity-80" />
-            </div>
-          </div>
+        <div className="px-2 mb-6">
+          <img src="/opsyjobs-logo-on-dark.svg" alt="OpsyJobs" className="h-9 w-auto" />
+          <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-2">Admin</div>
         </div>
         <nav className="flex flex-col gap-1">
           {NAV.map((n) => (
